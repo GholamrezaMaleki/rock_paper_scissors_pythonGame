@@ -27,7 +27,8 @@ def findHandMoves(hand_landmarks):
     elif all([landmarks[i].y > landmarks[i + 3].y for i in range(5, 18, 4)]):
         return "paper"
     else:
-        return "not right shape"
+        return "-1"
+
 
 while True:
     ret, img = cap.read()
@@ -53,15 +54,22 @@ while True:
         hls = results.multi_hand_landmarks
         if hls:
             if len(hls) == 2:
-                p1_move = findHandMoves(hls[0])
-                p2_move = findHandMoves(hls[1])
+                x1 = hls[1].landmark[0].x
+                x2 = hls[0].landmark[0].x
+
+                if x1 < x2:
+                    p1_move = findHandMoves(hls[0])
+                    p2_move = findHandMoves(hls[1])
+                else:
+                    p1_move = findHandMoves(hls[1])
+                    p2_move = findHandMoves(hls[0])
 
             else:
                 success = False
         else:
             success = False
     elif clock < 100:
-        if (success):
+        if (success and p1_move != "-1" and p2_move != "-1"):
             gameText = f"        {p1_move}             {p2_move}"
             if p1_move == p2_move:
                 winner = "Game is tied"
@@ -74,14 +82,23 @@ while True:
             else:
                 winner = "player 2 wins"
         else:
-            winner=""
+            winner = ""
             gameText = "didn't play properly"
     if not ret:
         break
-    cv2.line(img,(320,0),(320,470),(0,0,255),3,cv2.LINE_AA)
-    cv2.putText(img, f"clock : {clock}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), 2, cv2.LINE_AA)
+    cv2.line(img, (320, 0), (320, 470), (0, 0, 255), 3, cv2.LINE_AA)
+    cv2.putText(img, f"player 1        player 2", (70, 50), cv2.FONT_HERSHEY_PLAIN, 2, (255, 0, 0), 2, cv2.LINE_AA)
+    if winner == "player 1 wins":
+        cv2.putText(img, "Winner", (50, 200), cv2.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 2, cv2.LINE_AA)
+    elif winner == "player 2 wins":
+        cv2.putText(img, "Winner", (400, 200), cv2.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 2, cv2.LINE_AA)
+    # elif winner == "Game is tied":
+    #     cv2.putText(img, "Winner", (50, 200), cv2.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 2, cv2.LINE_AA)
+    #     cv2.putText(img, "Winner", (400, 200), cv2.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 2, cv2.LINE_AA)
+
+    # cv2.putText(img, f"clock : {clock}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), 2, cv2.LINE_AA)
     cv2.putText(img, gameText, (50, 100), cv2.FONT_HERSHEY_PLAIN, 2, (150, 30, 255), 2, cv2.LINE_AA)
-    cv2.putText(img,winner,(50,130),cv2.FONT_HERSHEY_PLAIN,2,(150, 30, 255),2,cv2.LINE_AA)
+    cv2.putText(img, winner, (50, 130), cv2.FONT_HERSHEY_PLAIN, 2, (150, 30, 255), 2, cv2.LINE_AA)
     clock = (clock + 1) % 100
     cv2.imshow('frame', img)
 
