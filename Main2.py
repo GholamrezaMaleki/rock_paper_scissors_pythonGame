@@ -21,7 +21,7 @@ def findHandMoves(hand_landmarks):
     landmarks = hand_landmarks.landmark
     if all([landmarks[i].y < landmarks[i + 3].y for i in range(5, 18, 4)]):
         return "rock"
-    elif landmarks[8].y < landmarks[5].y and landmarks[12] < landmarks[9] and all(
+    elif (landmarks[8].y < landmarks[5].y) and (landmarks[12].y < landmarks[9].y) and all(
             [landmarks[i].y < landmarks[i + 3].y for i in range(13, 18, 4)]):
         return "scissors"
     elif all([landmarks[i].y > landmarks[i + 3].y for i in range(5, 18, 4)]):
@@ -53,7 +53,10 @@ while True:
         hls = results.multi_hand_landmarks
         if hls:
             if len(hls) == 2:
-                print("two hands detected")
+                p1_move=findHandMoves(hls[0])
+                p2_move=findHandMoves(hls[1])
+                print(p1_move)
+                print(p2_move)
             else:
                 success = False
     elif clock < 100:
