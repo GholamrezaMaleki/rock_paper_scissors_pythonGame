@@ -15,6 +15,21 @@ p1_move = p2_move = None
 gameText = ""
 
 success = True
+
+
+def findHandMoves(hand_landmarks):
+    landmarks = hand_landmarks.landmark
+    if all([landmarks[i].y < landmarks[i + 3].y for i in range(5, 18, 4)]):
+        return "rock"
+    elif landmarks[8].y < landmarks[5].y and landmarks[12] < landmarks[9] and all(
+            [landmarks[i].y < landmarks[i + 3].y for i in range(13, 18, 4)]):
+        return "scissors"
+    elif all([landmarks[i].y > landmarks[i + 3].y for i in range(5, 18, 4)]):
+        return "paper"
+    else:
+        return "not right shape"
+
+
 while True:
     ret, img = cap.read()
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -36,11 +51,16 @@ while True:
         gameText = "Go!!"
     elif clock == 60:
         hls = results.multi_hand_landmarks
-        if hls :
-            if len(hls)==2:
+        if hls:
+            if len(hls) == 2:
                 print("two hands detected")
-            elif len(hls)==1:
-                print("one hand detected")
+            else:
+                success = False
+    elif clock < 100:
+        if (success):
+            pass
+        else:
+            gameText = "didn't play properly"
     if not ret:
         break
     cv2.putText(img, f"clock : {clock}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), 2, cv2.LINE_AA)
