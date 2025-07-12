@@ -29,15 +29,15 @@ def findHandMoves(hand_landmarks):
     else:
         return "not right shape"
 
-
 while True:
     ret, img = cap.read()
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     results = hands.process(imgRGB)
+
     if results.multi_hand_landmarks:
         for handLms in results.multi_hand_landmarks:
             mpDraw.draw_landmarks(img, handLms, mpHands.HAND_CONNECTIONS)
-
+    img = cv2.flip(img, 1)
     if 0 <= clock < 20:
         success = True
         gameText = "Are You Ready?"
@@ -53,22 +53,36 @@ while True:
         hls = results.multi_hand_landmarks
         if hls:
             if len(hls) == 2:
-                p1_move=findHandMoves(hls[0])
-                p2_move=findHandMoves(hls[1])
-                print(p1_move)
-                print(p2_move)
+                p1_move = findHandMoves(hls[0])
+                p2_move = findHandMoves(hls[1])
+
             else:
                 success = False
+        else:
+            success = False
     elif clock < 100:
         if (success):
-            pass
+            gameText = f"        {p1_move}             {p2_move}"
+            if p1_move == p2_move:
+                winner = "Game is tied"
+            elif p1_move == "paper" and p2_move == "rock":
+                winner = "player 1 wins"
+            elif p1_move == "rock" and p2_move == "scissors":
+                winner = "player 1 wins"
+            elif p1_move == "scissors" and p2_move == "paper":
+                winner = "player 1 wins"
+            else:
+                winner = "player 2 wins"
         else:
+            winner=""
             gameText = "didn't play properly"
     if not ret:
         break
+    cv2.line(img,(320,0),(320,470),(0,0,255),3,cv2.LINE_AA)
     cv2.putText(img, f"clock : {clock}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), 2, cv2.LINE_AA)
-    cv2.putText(img, gameText, (50, 80), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2, cv2.LINE_AA)
-    clock = (clock + 0.5) % 100
+    cv2.putText(img, gameText, (50, 100), cv2.FONT_HERSHEY_PLAIN, 2, (150, 30, 255), 2, cv2.LINE_AA)
+    cv2.putText(img,winner,(50,130),cv2.FONT_HERSHEY_PLAIN,2,(150, 30, 255),2,cv2.LINE_AA)
+    clock = (clock + 1) % 100
     cv2.imshow('frame', img)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
